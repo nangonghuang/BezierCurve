@@ -1,7 +1,5 @@
 package com.example.alan.beziercurve;
 
-import android.animation.AnimatorSet;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -11,15 +9,16 @@ import android.graphics.Point;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
+
+import java.util.Random;
 
 /**
  * Created by alan on 2017/11/15.
- * 圆变成桃心的动画
  */
 
-public class HeartAnim extends View {
+public class HeartView extends View {
 
+    public static final int DEFAULT_SIZE = 240;
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint mPaintAssit = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Path mPath = new Path();
@@ -30,23 +29,22 @@ public class HeartAnim extends View {
     private int centerX;
     private int centerY;
 
-    public HeartAnim(Context context) {
+    public HeartView(Context context) {
         super(context);
         init();
-
     }
 
-    public HeartAnim(Context context, @Nullable AttributeSet attrs) {
+    public HeartView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public HeartAnim(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public HeartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
-    public HeartAnim(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public HeartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
     }
@@ -59,11 +57,11 @@ public class HeartAnim extends View {
         int heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightSpecSize = MeasureSpec.getSize(heightMeasureSpec);
         if (widthSpecMode == MeasureSpec.AT_MOST && heightSpecMode == MeasureSpec.AT_MOST) {
-            setMeasuredDimension(600, 600);
+            setMeasuredDimension(DEFAULT_SIZE, DEFAULT_SIZE);
         } else if (widthSpecMode == MeasureSpec.AT_MOST) {
-            setMeasuredDimension(600, heightSpecSize);
+            setMeasuredDimension(DEFAULT_SIZE, heightSpecSize);
         } else if (heightSpecMode == MeasureSpec.AT_MOST) {
-            setMeasuredDimension(widthSpecSize, 600);
+            setMeasuredDimension(widthSpecSize, DEFAULT_SIZE);
         }
     }
 
@@ -88,13 +86,6 @@ public class HeartAnim extends View {
         for (int i = 0; i < pointsControl.length; i++) {
             pointsControl[i] = new Point();
         }
-
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startAnimation();
-            }
-        }, 2000);
     }
 
     @Override
@@ -128,7 +119,7 @@ public class HeartAnim extends View {
 
     private void initPoints() {
         pointsData[0].x = centerX;
-        pointsData[0].y = centerY - radius;
+        pointsData[0].y = pointsData[0].y + radius / 2;
         pointsData[1].x = centerX + radius;
         pointsData[1].y = centerY;
         pointsData[2].x = centerX;
@@ -140,13 +131,13 @@ public class HeartAnim extends View {
         pointsControl[0].y = centerY - radius;
         pointsControl[1].x = centerX + radius;
         pointsControl[1].y = (int) (centerY - magicNumber * radius);
-        pointsControl[2].x = centerX + radius;
+        pointsControl[2].x = centerX + radius - radius / 4;
         pointsControl[2].y = (int) (centerY + magicNumber * radius);
         pointsControl[3].x = (int) (centerX + magicNumber * radius);
-        pointsControl[3].y = centerY + radius;
+        pointsControl[3].y = centerY + radius - radius / 4;
         pointsControl[4].x = (int) (centerX - magicNumber * radius);
-        pointsControl[4].y = centerY + radius;
-        pointsControl[5].x = centerX - radius;
+        pointsControl[4].y = centerY + radius - radius / 4;
+        pointsControl[5].x = centerX - radius + radius / 4;
         pointsControl[5].y = (int) (centerY + magicNumber * radius);
         pointsControl[6].x = centerX - radius;
         pointsControl[6].y = (int) (centerY - magicNumber * radius);
@@ -154,46 +145,15 @@ public class HeartAnim extends View {
         pointsControl[7].y = centerY - radius;
     }
 
+    public void updatePosition(float x, float y) {
+        setX(x);
+        setY(y);
+    }
 
-    private void startAnimation() {
-        ValueAnimator animator = ValueAnimator.ofInt(pointsData[0].y, pointsData[0].y + radius / 2);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                pointsData[0].y = (int) animation.getAnimatedValue();
-                postInvalidate();
-            }
-        });
-        ValueAnimator animator2 = ValueAnimator.ofInt(centerX + radius, centerX + radius - radius / 4);
-        animator2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                pointsControl[2].x = (int) animation.getAnimatedValue();
-                postInvalidate();
-            }
-        });
-        ValueAnimator animator3 = ValueAnimator.ofInt(centerX - radius, centerX - radius + radius / 4);
-        animator3.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                pointsControl[5].x = (int) animation.getAnimatedValue();
-                postInvalidate();
-            }
-        });
-        ValueAnimator animator4 = ValueAnimator.ofInt(centerY + radius, centerY + radius - radius / 4);
-        animator4.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                pointsControl[3].y = (int) animation.getAnimatedValue();
-                pointsControl[4].y = (int) animation.getAnimatedValue();
-                postInvalidate();
-            }
-        });
-
-        AnimatorSet mAnimatorSet = new AnimatorSet();
-        mAnimatorSet.setDuration(2000);
-        mAnimatorSet.setInterpolator(new LinearInterpolator());
-        mAnimatorSet.playTogether(animator, animator2, animator3, animator4);
-        mAnimatorSet.start();
+    public void randomColor(){
+        Random random = new Random();
+        mPaint.setColor(Color.argb(random.nextInt(255),
+                random.nextInt(255),random.nextInt(255),random.nextInt(255)));
+        invalidate();
     }
 }
